@@ -79,6 +79,18 @@ const db = new sqlite3.Database(dbpath)
         ai_channel_id TEXT        
         )
         `);
+            await execute(db, `
+        CREATE TABLE IF NOT EXISTS serverconfig (
+        server_id TEXT PRIMARY KEY,        
+        ai_channel_id TEXT        
+        )
+        `);
+            await execute(db, `CREATE TABLE IF NOT EXISTS qotd (
+        id TEXT PRIMARY KEY,
+        question TEXT NOT NULL,
+        used TEXT DEFAULT 'false'
+        )
+        `);
         }
 
 

@@ -5,6 +5,7 @@
     require('dotenv').config({ path: ".env" });
     const chalk = require("chalk");
     const { ChangeStatus } = require('./utils/ChangeStatus')
+    const cron = require('node-cron');
     const {init} = require("./utils/initializebot");
     const {handleaichat} = require("./utils/handleaichat");
     const {loadcommands} = require("./utils/loadcommands");
@@ -64,8 +65,11 @@
     });
 
     init(client, "./config.json")
-    .then(() => {
+    .then(async () => {
         console.log("initialized successfully")
+        cron.schedule("0 9 * * *", async () => {
+
+        })
     }).catch(error => {
         console.error(chalk.red(`[ERROR] A FATAL ERROR OCCURRED, ${error.stack}`))
 })
