@@ -1,6 +1,6 @@
     const { Client, Events, GatewayIntentBits, Collection, MessageFlags } = require('discord.js');
     const fs = require('fs');
-    const loadButtonHandler = require('./handlers/ButtonHandler');
+    const loadButtonHandler = require('./handlers/buttonhandler');
     const path = require('path');
     require('dotenv').config({ path: ".env" });
     const chalk = require("chalk");
