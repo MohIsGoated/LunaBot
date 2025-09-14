@@ -1,9 +1,10 @@
 const chalk = require("chalk");
 const {getaichannels} = require("./db");
 const {handlecd} = require("./handlecd");
-const {MessageFlags} = require("discord.js");
+const {MessageFlags, PermissionsBitField} = require("discord.js");
 const {handleerror} = require("./handleerror");
 const {setAiIds} = require("./setaiids");
+const {presets} = require("../data/embed");
 module.exports = {
     async handlecommands(client, interaction, config, cooldowns){
         const command = client.commands.get(interaction.commandName);
@@ -22,6 +23,12 @@ module.exports = {
                 content: `Only the owner of the bot may use this command!`,
                 flags: MessageFlags.Ephemeral
             });
+        }
+        if (command.modOnly) {
+            if (!interaction.member.permissions.has(PermissionsBitField.Flags.KickMembers)) return interaction.reply({
+                embeds: [presets.error("ERROR", "This command is only available to members with kick permissions")],
+                flags: MessageFlags.Ephemeral
+            })
         }
         try {
             await command.execute(interaction);

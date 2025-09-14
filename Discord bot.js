@@ -12,10 +12,12 @@
     const {handlecommands} = require("./utils/handlecommands");
     const {getAiIds} = require("./utils/setaiids");
     const {deploy} = require("./Deploy");
+    const {execute, db, queryone} = require("./utils/db");
     const cooldowns = new Map();
     const folderpath = path.join(__dirname, 'Commands');
     const CommandsFolder = fs.readdirSync(folderpath);
     const fpath = path.join(__dirname, "/config.json")
+    const invites = new Map();
     const client = new Client({ intents: [
             GatewayIntentBits.Guilds,
             GatewayIntentBits.GuildMembers,
@@ -26,7 +28,7 @@
     client.commands = new Collection();
     client.buttons = new Collection();
     loadButtonHandler(client)
-    let config = JSON.parse(fs.readFileSync(fpath))
+    let config = JSON.parse(fs.readFileSync(fpath).toString())
     loadcommands(client, CommandsFolder, folderpath)
 
     deploy()
@@ -57,6 +59,38 @@
             await ChangeStatus(client, config.status, config.appearance)
         }
     });
+
+    client.on(Events.ClientReady, async () => {
+        for (const [guildId, guild] of client.guilds.cache) {
+            const firstinvites = await guild.invites.fetch()
+            invites.set(
+                guildId,
+                new Map(firstinvites.map((invite) => [invite.code, invite.uses]))
+            )
+        }
+    })
+
+    client.on(Events.GuildMemberAdd, async (member) => {
+        const cachedInvites = invites.get(member.guild.id)
+        const newInvites = await member.guild.invites.fetch()
+
+        const inviteUsed = newInvites.find(
+            (invite) => cachedInvites.get(invite.code) < invite.uses
+        )
+        if (inviteUsed) {
+            console.log(`${member.user.username} was invited using code ${inviteUsed.code} by ${inviteUsed.inviter.tag}`)
+            const InviteExists = await queryone(db, "SELECT * FROM invites WHERE invitedId=?", [member.user.id])
+            if (!InviteExists) {
+                await execute(db, "INSERT INTO invites(invitedId, inviterId, inviteCode) VALUES(?, ?, ?)", [member.user.id, inviteUsed.inviter.id, inviteUsed.code])
+            } else {
+                await execute(db, "UPDATE invites SET inviterId=?, inviteCode=? WHERE invitedId =?", [inviteUsed.inviter.id, inviteUsed.code, member.user.id])
+            }
+        }
+        invites.set(
+            member.guild.id,
+            new Map(newInvites.map((invite) => [invite.code, invite.uses]))
+        )
+    })
 
     client.on(Events.InteractionCreate, async interaction => {
         if (interaction.isChatInputCommand()) {
