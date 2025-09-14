@@ -22,7 +22,7 @@ module.exports = {
             if (message.reference) {
                 reference = await message.channel.messages.fetch(message.reference.messageId)
             }
-            const response = await getresponse(message.content, history, client.user.username, message.member.username, reference)
+            const response = await getresponse(message.content, history, client.user.username, message.member.displayName, reference)
             const responsetext = response.text
             const fixedstring = responsetext.replace(/<@!?(\d+)>|<@&!?(\d+)>|@everyone|@here/g, 'REDACTED');
             if (fixedstring.length > 2000) {
