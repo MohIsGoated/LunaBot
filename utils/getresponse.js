@@ -37,7 +37,7 @@ require("dotenv").config({path: "../../.env"})
                     `Given all the above instructions, generate a response for the following message sent by ${sender}, REMEMBER THE NAME, each name is critical to match with the history and not confuse who they are, you are allowed to use their name in your message ONLY AND ONLY IF IT IS RELEVANT TO THE MESSAGE YOU ARE TYPING : ${message}`,
             })
         } catch (e) {
-            return "uhh an error occured"
+            return "uhh an error occurred"
         }
     }
 
