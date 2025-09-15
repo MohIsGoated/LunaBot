@@ -1,2 +1,4 @@
+.env
+config.json
 data/discord.db
-/.env
+node_modules/
