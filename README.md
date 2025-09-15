@@ -6,7 +6,7 @@ LunaBot is a powerful, multipurpose Discord bot designed to enhance your server 
 
 ## Features
 
-### 🛡️ Moderation
+### 🛡️ Moderation (Bot owner only until permission checks)
 - **Ban Command:** Ban members from your server (owner-only).
 - **Inviter Lookup:** See who invited a user to the server (mod-only).
 
