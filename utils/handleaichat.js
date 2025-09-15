@@ -25,7 +25,7 @@ module.exports = {
             }
             const response = await getresponse(message.content, history, client.user.username, message.author.globalName || message.member.displayName, reference) || `An error occurred and the bot did not generate any text, please contact <@${config.ownerId}`
             const responsetext = response.text
-            const fixedstring = responsetext.replace(/<@!?(\d+)>|<@&!?(\d+)>|@everyone|@here/g, 'REDACTED');
+            const fixedstring = responsetext.replace(/<@!?(\d+)>|<@&!?(\d+)>|@everyone|@here/g, '(Not Allowed to ping that)');
             if (fixedstring.length > 2000) {
                 const filePath = path.join(__dirname, 'message.txt');
                 fs.writeFileSync(filePath, fixedstring, 'utf8');
