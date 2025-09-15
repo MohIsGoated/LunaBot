@@ -21,7 +21,7 @@ module.exports = {
             })
         }
 
-        const { inviterId, inviteCode } = await queryone(db, "SELECT * FROM invites WHERE invitedId=?", [target.id]) || ""
+        const { inviterId, inviteCode } = await queryone(db, "SELECT * FROM invites WHERE invitedId=? AND serverId=?", [target.id, interaction.guild.id]) || ""
         if (!inviterId) {
             return await interaction.reply({
                 embeds: [presets.warning("FAILURE", "No inviter data (Maybe invited using vanity / other methods?)")]

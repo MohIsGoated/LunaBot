@@ -79,11 +79,11 @@
         )
         if (inviteUsed) {
             console.log(`${member.user.username} was invited using code ${inviteUsed.code} by ${inviteUsed.inviter.tag}`)
-            const InviteExists = await queryone(db, "SELECT * FROM invites WHERE invitedId=?", [member.user.id])
+            const InviteExists = await queryone(db, "SELECT * FROM invites WHERE invitedId=? AND serverId=?", [member.user.id, member.guild.id])
             if (!InviteExists) {
-                await execute(db, "INSERT INTO invites(invitedId, inviterId, inviteCode) VALUES(?, ?, ?)", [member.user.id, inviteUsed.inviter.id, inviteUsed.code])
+                await execute(db, "INSERT INTO invites(invitedId, inviterId, inviteCode, serverId) VALUES(?, ?, ?, ?)", [member.user.id, inviteUsed.inviter.id, inviteUsed.code, member.guild.id])
             } else {
-                await execute(db, "UPDATE invites SET inviterId=?, inviteCode=? WHERE invitedId =?", [inviteUsed.inviter.id, inviteUsed.code, member.user.id])
+                await execute(db, "UPDATE invites SET inviterId=?, inviteCode=? WHERE invitedId =? AND serverId=?", [inviteUsed.inviter.id, inviteUsed.code, member.user.id, member.guild.id])
             }
         }
         invites.set(
