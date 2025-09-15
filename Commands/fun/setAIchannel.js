@@ -1,6 +1,7 @@
 const { EmbedBuilder, SlashCommandBuilder, resolveColor, MessageFlags} = require('discord.js')
 const { exists, execute, queryone, queryall, db, serverindb, registerserver} = require('../../utils/db')
 const config = require('../../config.json')
+const {setAiIds, getAiIds} = require("../../utils/setaiids");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -15,16 +16,15 @@ module.exports = {
 
     async execute(interaction) {
         const channel = interaction.options.getChannel("channel");
-        const caller = interaction.member
         const serverid = interaction.guild.id
         if (!await serverindb(serverid)) {
             await registerserver(serverid)
         }
 
-        if (config.ownerID !== interaction.member.id) {
-            return interaction.reply("Only the bot owner can do this atm")
-        }
         await execute(db, "UPDATE serverconfig SET ai_channel_id=? WHERE server_id=?", [channel.id, serverid])
+        const [{ai_channel_id} ] = await queryall(db, "SELECT * FROM serverconfig")
+        setAiIds(ai_channel_id)
+
         interaction.reply("Changed the AI bot channel!")
     }
 }
