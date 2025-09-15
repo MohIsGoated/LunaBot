@@ -23,19 +23,22 @@ module.exports = {
             if (message.reference) {
                 reference = await message.channel.messages.fetch(message.reference.messageId)
             }
-            const response = await getresponse(message.content, history, client.user.username, message.author.globalName || message.member.displayName, reference) || `An error occurred and the bot did not generate any text, please contact <@${config.ownerId}`
-            const responsetext = response.text
-            const fixedstring = responsetext.replace(/<@!?(\d+)>|<@&!?(\d+)>|@everyone|@here/g, '(Not Allowed to ping that)');
-            if (fixedstring.length > 2000) {
+            const response = await getresponse(message.content, history, client.user.username, message.author.globalName || message.member.displayName, reference) || `An error occurred and the bot did not generate any text, please contact <@${config.ownerId}>`
+            let responsetext = response.text
+            if (/<@!?(\d+)>|<@&!?(\d+)>|@everyone|@here/g.test(responsetext))
+            {
+                 responsetext = responsetext.replace(/<@!?(\d+)>|<@&!?(\d+)>|@everyone|@here/g, '(Not Allowed to ping that)');
+            }
+            if (responsetext.length > 2000) {
                 const filePath = path.join(__dirname, 'message.txt');
-                fs.writeFileSync(filePath, fixedstring, 'utf8');
+                fs.writeFileSync(filePath, responsetext, 'utf8');
 
                 await message.reply({
                     files: [filePath]
                 })
                 fs.unlinkSync(filePath);
             } else {
-                await message.reply(fixedstring)
+                await message.reply(responsetext)
             }
         }
     }
