@@ -75,13 +75,11 @@ const db = new sqlite3.Database(dbpath)
         `);
         await execute(db, `
         CREATE TABLE IF NOT EXISTS serverconfig (
-        server_id TEXT PRIMARY KEY,        
-        ai_channel_id TEXT        
-        )
-        `);
-            await execute(db, `
-        CREATE TABLE IF NOT EXISTS serverconfig (
-        server_id TEXT PRIMARY KEY,        
+        server_id TEXT PRIMARY KEY,
+        suggestionChannelId TEXT,
+        deniedChannelId TEXT,
+        acceptedChannelId TEXT,
+        autothread TEXT,
         ai_channel_id TEXT        
         )
         `);
@@ -96,6 +94,18 @@ const db = new sqlite3.Database(dbpath)
         inviterId TEXT NOT NULL,
         serverId TEXT NOT NULL,
         inviteCode TEXT NOT NULL
+        )
+        `);
+            await execute(db, `CREATE TABLE IF NOT EXISTS suggestions (
+        suggestionId TEXT PRIMARY KEY,
+        suggestionMessageId TEXT NOT NULL,
+        suggestion TEXT NOT NULL,
+        serverId TEXT NOT NULL,
+        suggestorId TEXT NOT NULL,
+        upvotes TEXT NOT NULL,
+        downvotes TEXT NOT NULL,
+        accepted INTEGER DEFAULT 0,
+        denied INTEGER DEFAULT 0
         )
         `);
         }
@@ -114,4 +124,7 @@ const db = new sqlite3.Database(dbpath)
         async function getaichannels() {
         return await queryall(db, "SELECT ai_channel_id FROM serverconfig")
         }
-module.exports = { execute, queryall, queryone, initDb, exists, registerserver, serverindb, getaichannels, db}
+        async function getsuggestchannels() {
+        return await queryall(db, "SELECT * FROM serverconfig")
+        }
+module.exports = { execute, queryall, queryone, initDb, exists, registerserver, serverindb, getaichannels, getsuggestchannels, db}
