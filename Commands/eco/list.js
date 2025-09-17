@@ -70,7 +70,10 @@ module.exports = {
             })
         } catch (e) {
             console.log(e)
-        interaction.reply("an unhandled error occurred, please report this to the bot author")
+        interaction.reply({
+            content: "an unhandled error occurred, please report this to the bot author",
+            flags: MessageFlags.Ephemeral
+        })
         }
     }
 }

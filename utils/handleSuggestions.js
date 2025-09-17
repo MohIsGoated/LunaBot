@@ -1,6 +1,7 @@
 const {ActionRowBuilder, ButtonBuilder, ButtonStyle} = require("discord.js");
 const {execute, db} = require("./db");
 const { v4: uuidv4 } = require('uuid');
+const {presets} = require("../data/embed");
 async function handleSuggestions(message) {
     const suggestion = message.content
     const id = uuidv4()
@@ -23,7 +24,14 @@ async function handleSuggestions(message) {
             .setStyle(ButtonStyle.Danger)
     )
 await message.channel.send({
-        content: `suggestion by <@${message.author.id}>: \n${suggestion}\nid: ${id}`,
+        embeds: [presets.info("", suggestion).setAuthor({
+            name: `Suggestion | ${message.author.username}`,
+            iconURL: message.author.displayAvatarURL({ dynamic: true }) ?? message.author.defaultAvatar
+        })
+            .setFooter({
+                text: `(ID: ${id})`
+            })
+        ],
         components: [row]
     }
 )
@@ -32,6 +40,7 @@ await message.channel.send({
         await data.startThread({
             name: "suggestion discussion"
         })
+        message.delete()
     })
 }
 

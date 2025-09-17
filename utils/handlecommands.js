@@ -30,6 +30,12 @@ module.exports = {
                 flags: MessageFlags.Ephemeral
             })
         }
+        if (command.adminOnly) {
+            if (!interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)) return interaction.reply({
+                embeds: [presets.error("ERROR", "This command is only available to members with admin perms")],
+                flags: MessageFlags.Ephemeral
+            })
+        }
         try {
             await command.execute(interaction);
         } catch (err) {

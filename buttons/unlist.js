@@ -16,7 +16,10 @@ module.exports = {
                 flags: MessageFlags.Ephemeral
         })
         } catch (e) {
-            await interaction.reply(`an unhandled error occurred`)
+            await interaction.reply({
+                content: `an unhandled error occurred`,
+                flags: MessageFlags.Ephemeral
+        })
             console.log(e, e.stack)
         }
     }

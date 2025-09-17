@@ -59,7 +59,10 @@
             await button.execute(interaction)
         } catch (e) {
             console.log(e + e.stack)
-            await interaction.reply("an unhandled error occurred")
+            await interaction.reply({
+                content: "an unhandled error occurred",
+                flags: MessageFlags.Ephemeral
+            })
         }
     })
 
