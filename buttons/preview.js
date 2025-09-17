@@ -17,7 +17,7 @@ module.exports = {
         }
         const channelId = interaction.message.channel.id
         const { deniedChannelId, acceptedChannelId} = await queryone(db, "SELECT * FROM serverconfig WHERE suggestionChannelId=? AND server_id=?", [channelId, interaction.guild.id])
-        const {suggestion, suggesterId, upvotes, downvotes, suggestionId } = await queryone(db, "SELECT * FROM suggestions WHERE suggestionMessageId=? AND serverId=?", [interaction.message.id, interaction.guild.id])
+        const { suggestion, suggesterId, upvotes, downvotes, suggestionId } = await queryone(db, "SELECT * FROM suggestions WHERE suggestionMessageId=? AND serverId=?", [interaction.message.id, interaction.guild.id])
 
         const suggester = interaction.guild.members.cache.get(suggesterId)
 
@@ -105,6 +105,7 @@ module.exports = {
                         ],
                         components: [row]
                     })
+                    await modalInteraction.deferUpdate();
                     interaction.message.delete()
                 } else if (result === "a" || result === "ac" || result === "acc" || result === "acce"|| result === "accep"|| result === "accept") {
                     await execute(db, "UPDATE suggestions SET accepted=? WHERE suggestionMessageId=? AND serverId=?", [1, interaction.message.id, interaction.guild.id])
@@ -125,6 +126,7 @@ module.exports = {
                         ],
                         components: [row]
                     })
+                    await modalInteraction.deferUpdate();
                     interaction.message.delete()
                 } else {
                     return modalInteraction.reply({
