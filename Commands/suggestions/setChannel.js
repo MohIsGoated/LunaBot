@@ -43,6 +43,8 @@ module.exports = {
         const newSuggestData = await queryall(db, "SELECT * FROM serverconfig")
         const newSuggestIds = newSuggestData.map(filter => filter.suggestionChannelId)
         setSuggestIds(newSuggestIds)
+
+        interaction.reply("successfully setup suggestions for this server")
     }
 
 }
