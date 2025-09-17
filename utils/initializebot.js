@@ -21,7 +21,7 @@ module.exports = {
         for (let id of serverIds) {
             let suggestionIds = getSuggestIds()
             const serverconfig = await queryone(db, "SELECT * FROM serverconfig WHERE server_id=?", [id])
-            suggestionIds.push(serverconfig.suggestionChannelId)
+            if (serverconfig.suggestionChannelId) suggestionIds.push(serverconfig.suggestionChannelId)
         }
     }
 }
