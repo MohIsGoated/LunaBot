@@ -1,4 +1,4 @@
-    const { Client, Events, GatewayIntentBits, Collection, MessageFlags } = require('discord.js');
+    const { Client, Events, GatewayIntentBits, Collection, ButtonStyle, MessageFlags, ActionRowBuilder, ButtonBuilder} = require('discord.js');
     const fs = require('fs');
     const loadButtonHandler = require('./handlers/buttonhandler');
     const path = require('path');
@@ -6,6 +6,7 @@
     const chalk = require("chalk");
     const { ChangeStatus } = require('./utils/ChangeStatus')
     const cron = require('node-cron');
+    const { v4: uuidv4 } = require('uuid');
     const {init} = require("./utils/initializebot");
     const {handleaichat} = require("./utils/handleaichat");
     const {loadcommands} = require("./utils/loadcommands");
@@ -13,6 +14,7 @@
     const {getAiIds} = require("./utils/setaiids");
     const {deploy} = require("./Deploy");
     const {execute, db, queryone} = require("./utils/db");
+    const {getSuggestIds} = require("./utils/setsuggestids");
     const cooldowns = new Map();
     const folderpath = path.join(__dirname, 'Commands');
     const CommandsFolder = fs.readdirSync(folderpath);
@@ -36,6 +38,43 @@
     client.on("messageCreate", async (message) => {
         if (getAiIds().includes(message.channel.id)) {
             await handleaichat(message, client);
+        }
+    })
+
+    client.on("messageCreate", async (message) => {
+        if (message.author.bot === true) return
+        if (getSuggestIds().includes(message.channel.id)) {
+            const suggestion = message.content
+            const id = uuidv4()
+            const row = new ActionRowBuilder()
+                .addComponents(
+                new ButtonBuilder()
+                    .setCustomId("upvote")
+                    .setLabel("0")
+                    .setEmoji("👍")
+                    .setStyle(ButtonStyle.Success),
+                new ButtonBuilder()
+                    .setCustomId("preview")
+                    .setLabel("0")
+                    .setEmoji("#️⃣")
+                    .setStyle(ButtonStyle.Primary),
+                new ButtonBuilder()
+                    .setCustomId("downvote")
+                    .setLabel("0")
+                    .setEmoji("👎")
+                    .setStyle(ButtonStyle.Danger)
+                )
+            await message.channel.send({
+                    content: `suggestion by <@${message.author.id}>: \n${suggestion}\nid: ${id}`,
+                    components: [row]
+        }
+            )
+                .then(async (data) => {
+                await execute(db, "INSERT INTO suggestions(serverId, suggestionMessageId, suggestion, suggestionId, suggesterId, upvotes, downvotes) VALUES (?, ?, ?, ?, ?, ?, ?)" ,[message.guild.id , data.id, message.content, id, message.member.id, 0, 0])
+                await data.startThread({
+                    name: "suggestion discussion"
+                })
+                })
         }
     })
 

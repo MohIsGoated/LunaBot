@@ -101,11 +101,19 @@ const db = new sqlite3.Database(dbpath)
         suggestionMessageId TEXT NOT NULL,
         suggestion TEXT NOT NULL,
         serverId TEXT NOT NULL,
-        suggestorId TEXT NOT NULL,
+        suggesterId TEXT NOT NULL,
         upvotes TEXT NOT NULL,
         downvotes TEXT NOT NULL,
         accepted INTEGER DEFAULT 0,
         denied INTEGER DEFAULT 0
+        )
+        `);
+            await execute(db, `CREATE TABLE IF NOT EXISTS votes (
+        suggestionId TEXT NOT NULL,
+        userId TEXT NOT NULL,
+        voteType TEXT NOT NULL CHECK(voteType IN ('up', 'down')),
+        PRIMARY KEY (suggestionId, userId),
+        FOREIGN KEY (suggestionId) REFERENCES suggestions(suggestionId) ON DELETE CASCADE
         )
         `);
         }
