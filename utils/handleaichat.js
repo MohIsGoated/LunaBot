@@ -23,8 +23,8 @@ module.exports = {
             if (message.reference) {
                 reference = await message.channel.messages.fetch(message.reference.messageId)
             }
-            const response = await getresponse(message.content, history, client.user.username, message.author.globalName || message.member.displayName, reference)
-            let responsetext = response.text || `An error occurred and the bot did not generate any text, please contact <@${config.ownerId}>`
+            const response = await getresponse(message.content, history, client.user.username, message.author.globalName || message.member.displayName, reference, message.author.id)
+            let responsetext = response.text || `An error occurred and the bot did not generate any text, please contact <@${config.ownerID}>`
             if (/<@!?(\d+)>|<@&!?(\d+)>|@everyone|@here/g.test(responsetext))
             {
                  responsetext = responsetext.replace(/<@!?(\d+)>|<@&!?(\d+)>|@everyone|@here/g, '(Not Allowed to ping that)');
