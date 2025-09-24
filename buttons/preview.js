@@ -19,7 +19,9 @@ module.exports = {
         const { deniedChannelId, acceptedChannelId} = await queryone(db, "SELECT * FROM serverconfig WHERE suggestionChannelId=? AND server_id=?", [channelId, interaction.guild.id])
         const { suggestion, suggesterId, upvotes, downvotes, suggestionId } = await queryone(db, "SELECT * FROM suggestions WHERE suggestionMessageId=? AND serverId=?", [interaction.message.id, interaction.guild.id])
 
-        const suggester = interaction.guild.members.cache.get(suggesterId)
+
+        const suggester = await interaction.guild.members.fetch(suggesterId).catch(() => null);
+
 
         const suggesterAvatar = suggester.user.avatarURL({ size: 128 }) ?? suggester.user.defaultAvatarURL
 
