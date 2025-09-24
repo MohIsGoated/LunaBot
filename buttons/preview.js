@@ -77,66 +77,68 @@ module.exports = {
         await interaction.showModal(modal)
 
         const filter = (interaction) => interaction.customId === "judgesuggestion"
-
-        interaction.awaitModalSubmit({
-            filter: filter,
-            time: 30_000
-        })
-            .then(async (modalInteraction) => {
-                const result = modalInteraction.fields.getTextInputValue("judgement")
-                const reason = modalInteraction.fields.getTextInputValue("reason") || "No reason provided"
-
-                if (result === "d" || result === "deny" || result === "den" || result === "de") {
-                    await execute(db, "UPDATE suggestions SET denied=? WHERE suggestionMessageId=? AND serverId=?", [1, interaction.message.id, interaction.guild.id])
-                    denyChannel.send({
-                        embeds: [presets.error(``, suggestion)
-                            .setFooter({
-                                text: `(ID: ${suggestionId})`
-                            })
-                            .setAuthor({
-                                name: `Suggestion | ${suggester.user.username}`,
-                                iconURL: suggesterAvatar
-                            })
-                            .addFields({
-                                name: `denied by ${interaction.user.username}`,
-                                value: reason
-                            })
-
-                        ],
-                        components: [row]
-                    })
-                    await modalInteraction.deferUpdate();
-                    interaction.message.delete()
-                } else if (result === "a" || result === "ac" || result === "acc" || result === "acce"|| result === "accep"|| result === "accept") {
-                    await execute(db, "UPDATE suggestions SET accepted=? WHERE suggestionMessageId=? AND serverId=?", [1, interaction.message.id, interaction.guild.id])
-                    acceptChannel.send({
-                        embeds: [presets.success(``, suggestion)
-                            .setFooter({
-                            text: `(ID: ${suggestionId})`
-                            })
-                            .setAuthor({
-                                name: `Suggestion | ${suggester.user.username}`,
-                                iconURL: suggesterAvatar
-                    })
-                            .addFields({
-                                name: `Accepted by ${interaction.user.username}`,
-                                value: reason
-                            })
-
-                        ],
-                        components: [row]
-                    })
-                    await modalInteraction.deferUpdate();
-                    interaction.message.delete()
-                } else {
-                    return modalInteraction.reply({
-                        content: "please either reply with accept or deny.",
-                        flags: MessageFlags.Ephemeral
-                    })
-                }
-
+        try {
+            await interaction.awaitModalSubmit({
+                filter: filter,
+                time: 240_000
             })
+                .then(async (modalInteraction) => {
 
+                    const result = modalInteraction.fields.getTextInputValue("judgement")
+                    const reason = modalInteraction.fields.getTextInputValue("reason") || "No reason provided"
+
+                    if (result === "d" || result === "deny" || result === "den" || result === "de") {
+                        await execute(db, "UPDATE suggestions SET denied=? WHERE suggestionMessageId=? AND serverId=?", [1, interaction.message.id, interaction.guild.id])
+                        denyChannel.send({
+                            embeds: [presets.error(``, suggestion)
+                                .setFooter({
+                                    text: `(ID: ${suggestionId})`
+                                })
+                                .setAuthor({
+                                    name: `Suggestion | ${suggester.user.username}`,
+                                    iconURL: suggesterAvatar
+                                })
+                                .addFields({
+                                    name: `denied by ${interaction.user.username}`,
+                                    value: reason
+                                })
+
+                            ],
+                            components: [row]
+                        })
+                        await modalInteraction.deferUpdate();
+                        interaction.message.delete()
+                    } else if (result === "a" || result === "ac" || result === "acc" || result === "acce" || result === "accep" || result === "accept") {
+                        await execute(db, "UPDATE suggestions SET accepted=? WHERE suggestionMessageId=? AND serverId=?", [1, interaction.message.id, interaction.guild.id])
+                        acceptChannel.send({
+                            embeds: [presets.success(``, suggestion)
+                                .setFooter({
+                                    text: `(ID: ${suggestionId})`
+                                })
+                                .setAuthor({
+                                    name: `Suggestion | ${suggester.user.username}`,
+                                    iconURL: suggesterAvatar
+                                })
+                                .addFields({
+                                    name: `Accepted by ${interaction.user.username}`,
+                                    value: reason
+                                })
+
+                            ],
+                            components: [row]
+                        })
+                        await modalInteraction.deferUpdate();
+                        interaction.message.delete()
+                    } else {
+                        return modalInteraction.reply({
+                            content: "please either reply with accept or deny.",
+                            flags: MessageFlags.Ephemeral
+                        })
+                    }
+                })
+        } catch (e) {
+            console.log(e)
+        }
 
     }
 }
