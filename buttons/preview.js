@@ -4,7 +4,6 @@
         ButtonBuilder,
         ButtonStyle, PermissionsBitField
     } = require("discord.js");
-    const activeCollectors = new Map();
 module.exports = {
     data: {
         name: "preview"
