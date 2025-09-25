@@ -21,7 +21,6 @@ module.exports = {
             .setDescription('Duration in hours for messages to delete')
             .setMaxValue(168)
         ),
-    ownerOnly: true,
     async execute(interaction) {
         const user = interaction.options.getUser('user')
         const member = interaction.options.getMember('user')
@@ -69,7 +68,15 @@ module.exports = {
                     embeds: [embed.setColor(resolveColor("Red")).setTitle('ERROR').setDescription('You cannot ban your self, silly!')],
                     flags: MessageFlags.Ephemeral
                 })
+            }
 
+
+            if (user.id === interaction.client.user.id) {
+
+                return interaction.reply({
+                    embeds: [embed.setColor(resolveColor("Red")).setTitle('ERROR').setDescription('I refuse to ban my self')],
+                    flags: MessageFlags.Ephemeral
+                })
             }
 
             if (!member.bannable) {
@@ -106,6 +113,24 @@ module.exports = {
         } else {
 
             try {
+                if (!interaction.member.permissions.has("BanMembers")) {
+
+                    return interaction.reply({
+                        embeds: [embed.setColor(resolveColor("Red")).setTitle('ERROR').setDescription('You do not have permissions to ban members')],
+                        flags: MessageFlags.Ephemeral
+                    })
+
+                }
+
+                if (!interaction.guild.members.me.permissions.has('BanMembers')) {
+
+                    return interaction.reply({
+                        embeds: [embed.setColor(resolveColor("Red")).setTitle('ERROR').setDescription('I do not have permission to ban members')],
+                        flags: MessageFlags.Ephemeral
+                    })
+
+                }
+
                 await interaction.guild.members.ban(user.id, {
                     deleteMessageSeconds: duration,
                     reason: `${reason} - by <@${interaction.user.id}>`
