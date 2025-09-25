@@ -1,4 +1,4 @@
-const {SlashCommandBuilder, EmbedBuilder, resolveColor, MessageFlags} = require('discord.js')
+const {SlashCommandBuilder, EmbedBuilder, resolveColor, MessageFlags, PermissionsBitField} = require('discord.js')
 const { IsBanned } = require('../../utils/IsBanned.js')
 const config = require('../../config.json')
 
@@ -16,7 +16,6 @@ module.exports = {
             .setDescription('Reason for unban.')
             .setMaxLength(480)
         ),
-    ownerOnly: true,
     async execute(interaction) {
         const user = interaction.options.getUser('user')
         const reason = interaction.options.getString('reason') ?? "No reason provided."
@@ -27,13 +26,13 @@ module.exports = {
                 iconURL: config.footerUrl
             })
             .setTimestamp(new Date())
-        if (!interaction.member.permissions.has("BanMembers")) {
+        if (!interaction.member.permissions.has(PermissionsBitField.Flags.BanMembers)) {
             return await interaction.reply({
                 embeds: [embed.setColor(resolveColor("Red")).setTitle("ERROR").setDescription("You do not have permissions to run this command")],
                 flags: MessageFlags.Ephemeral
             })
         }
-        if (!interaction.guild.members.me.permissions.has("BanMembers")) {
+        if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.BanMembers)) {
             return await interaction.reply({
                 embeds: [embed.setTitle('ERROR').setDescription(`I do not have permissions to unban members, are my roles setup correctly?`).setColor(resolveColor("Red"))],
                 flags: MessageFlags.Ephemeral
