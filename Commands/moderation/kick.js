@@ -1,4 +1,4 @@
-const { EmbedBuilder, SlashCommandBuilder, resolveColor} = require('discord.js')
+const { EmbedBuilder, SlashCommandBuilder, resolveColor, MessageFlags} = require('discord.js')
 const config = require('../../config.json')
 
 module.exports = {
@@ -15,7 +15,6 @@ module.exports = {
             .setDescription('Reason to kick this user')
             .setMaxLength(480)
         ),
-    ownerOnly: true,
     async execute(interaction) {
         const member = interaction.options.getMember('user')
         const reason = interaction.options.getString('reason') ?? 'No reason provided'
@@ -39,11 +38,11 @@ module.exports = {
                 return await interaction.reply({embeds: [embed.setColor(resolveColor('Red')).setTitle('ERROR').setDescription('You cannot kick your self, silly!')]})
             }
 
-            if (interaction.guild.members.me.id === member.id) {
+            if (member.id === interaction.client.user.id) {
                 return await interaction.reply({embeds: [embed.setColor(resolveColor('Red')).setTitle('ERROR').setDescription('I refuse to kick my self, Deal with it.')]})
             }
 
-            if (interaction.user.roles.highest.position <= member.roles.highest.position && interaction.user.user !== interaction.guild.ownerId) {
+            if (interaction.member.roles.highest.position <= member.roles.highest.position && interaction.user.id !== interaction.guild.ownerId) {
                 return await interaction.reply({embeds: [embed.setColor(resolveColor('Red')).setTitle('ERROR').setDescription('You do not have permissions to kick this specific member')]})
             }
 
@@ -51,10 +50,13 @@ module.exports = {
                 return await interaction.reply({embeds: [embed.setColor(resolveColor('Red')).setTitle('ERROR').setDescription('I do not have permissions to kick this member (Possibly higher role?)')]})
             } else {
                 try {
-                    interaction.guild.members.kick(member.id, `${reason} - By ${interaction.member.id}`)
+                    await interaction.guild.members.kick(member.id, `${reason} - By ${interaction.member.id}`)
                     return await interaction.reply({embeds: [embed.setColor(resolveColor('Green')).setTitle('SUCCESS').setDescription(`Successfully kicked member <@${member.id}>`)]})
                 } catch (e) {
-                    return await interaction.reply({embeds: [embed.setColor(resolveColor('Red')).setTitle('ERROR').setDescription(`An unexpected error occured, ${e.message}`)]})
+                    return await interaction.reply({
+                        embeds: [embed.setColor(resolveColor('Red')).setTitle('ERROR').setDescription(`An unexpected error occured, ${e.message}`)],
+                        flags: MessageFlags.Ephemeral
+                    })
                 }
             }
         } else {
