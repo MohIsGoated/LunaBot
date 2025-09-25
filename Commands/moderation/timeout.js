@@ -1,4 +1,4 @@
-const {SlashCommandBuilder, EmbedBuilder, resolveColor} = require('discord.js')
+const {SlashCommandBuilder, EmbedBuilder, resolveColor, MessageFlags, PermissionsBitField} = require('discord.js')
 const config = require('../../config.json')
 const {inguild} = require("../../utils/inguild");
 
@@ -22,14 +22,13 @@ module.exports = {
             .setDescription('What to timeout this member for?')
             .setMaxLength(480)
         ),
-    ownerOnly: true,
     async execute(interaction) {
         const embed = new EmbedBuilder()
             .setFooter({ text: config.footer, iconURL: config.footerUrl})
-        const target = await interaction.options.getUser('user')
+        const target =  interaction.options.getUser('user')
         const caller = interaction.member
-        const duration = await interaction.options.getNumber('duration')
-        const reason = await interaction.options.getString('reason') ?? 'no reason given'
+        const duration =  interaction.options.getNumber('duration')
+        const reason =  interaction.options.getString('reason') ?? 'no reason given'
         const ismember = await inguild(interaction, target.id)
         if (target.id === interaction.user.id) {
             return interaction.reply({
@@ -37,9 +36,26 @@ module.exports = {
             })
         }
 
-        if (!interaction.member.permissions.has("MODERATE_MEMBERS")){
+        if (!interaction.member.permissions.has(PermissionsBitField.Flags.ModerateMembers)){
             return interaction.reply({
                 embeds: [embed.setColor(resolveColor("Red")).setDescription('You do not have permission to timeout others')]
+            })
+        }
+
+        if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.ModerateMembers)) {
+
+            return interaction.reply({
+                embeds: [embed.setColor(resolveColor("Red")).setTitle('ERROR').setDescription('I do not have permission to ban members')],
+                flags: MessageFlags.Ephemeral
+            })
+
+        }
+
+        if (target.id === interaction.client.user.id) {
+
+            return interaction.reply({
+                embeds: [embed.setColor(resolveColor("Red")).setTitle('ERROR').setDescription('I refuse to timeout my self')],
+                flags: MessageFlags.Ephemeral
             })
         }
 
@@ -49,6 +65,7 @@ module.exports = {
             })
         }
 
+
         if (!ismember) {
             return interaction.reply({
                 embeds: [embed.setColor(resolveColor("Red")).setDescription('This member is not in the guild')]
@@ -56,6 +73,15 @@ module.exports = {
         }
 
         const membertarget = await interaction.options.getMember('user')
+
+        if (!membertarget.moderatable) {
+
+            return interaction.reply({
+                embeds: [embed.setColor(resolveColor("Red")).setTitle('ERROR').setDescription('I do not have permissions to timeout this member (possibly higher role?)')],
+                flags: MessageFlags.Ephemeral
+            })
+
+        }
 
         if (caller.roles.highest.position <= membertarget.roles.highest.position && interaction.guild.ownerId !== caller.id) {
             return interaction.reply({
