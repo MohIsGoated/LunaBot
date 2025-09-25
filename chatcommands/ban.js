@@ -58,7 +58,6 @@ module.exports = {
 
         if (toBan) {
 
-            console.log("I started")
 
             if (message.member.id === toBan.id) {
 
