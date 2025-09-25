@@ -1,9 +1,10 @@
-const {execute, db, queryone} = require("../utils/db");
-const { createEmbed, presets } = require('../data/embed');
-const {resolveColor, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder,
-    ButtonBuilder,
-    ButtonStyle, PermissionsBitField
-} = require("discord.js");
+    const {execute, db, queryone} = require("../utils/db");
+    const { createEmbed, presets } = require('../data/embed');
+    const {resolveColor, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder,
+        ButtonBuilder,
+        ButtonStyle, PermissionsBitField
+    } = require("discord.js");
+    const activeCollectors = new Map();
 module.exports = {
     data: {
         name: "preview"
@@ -52,7 +53,7 @@ module.exports = {
 
 
         const modal = new ModalBuilder({
-            customId: "judgesuggestion",
+            customId: `judgesuggestion-${suggestionId}`,
             title: "Judge Suggestion"
         });
 
@@ -76,71 +77,91 @@ module.exports = {
 
         modal.addComponents(FirstActionRow, SecondActionRow)
 
+
+
         await interaction.showModal(modal)
 
-        const filter = (interaction) => interaction.customId === "judgesuggestion"
+
+        const filter = (i) => i.customId === `judgesuggestion-${suggestionId}`
+
+
         try {
-            await interaction.awaitModalSubmit({
-                filter: filter,
-                time: 240_000
-            })
-                .then(async (modalInteraction) => {
+            const modalInteraction = await interaction.awaitModalSubmit({
+                filter: i =>
+                    i.customId === `judgesuggestion-${suggestionId}` &&
+                    i.user.id === interaction.user.id,
+                time: 240_000,
+            });
 
-                    const result = modalInteraction.fields.getTextInputValue("judgement")
-                    const reason = modalInteraction.fields.getTextInputValue("reason") || "No reason provided"
 
-                    if (result === "d" || result === "deny" || result === "den" || result === "de") {
-                        await execute(db, "UPDATE suggestions SET denied=? WHERE suggestionMessageId=? AND serverId=?", [1, interaction.message.id, interaction.guild.id])
-                        denyChannel.send({
-                            embeds: [presets.error(``, suggestion)
-                                .setFooter({
-                                    text: `(ID: ${suggestionId})`
-                                })
-                                .setAuthor({
-                                    name: `Suggestion | ${suggester.user.username}`,
-                                    iconURL: suggesterAvatar
-                                })
-                                .addFields({
-                                    name: `denied by ${interaction.user.username}`,
-                                    value: reason
-                                })
 
-                            ],
-                            components: [row]
-                        })
-                        await modalInteraction.deferUpdate();
-                        interaction.message.delete()
-                    } else if (result === "a" || result === "ac" || result === "acc" || result === "acce" || result === "accep" || result === "accept") {
-                        await execute(db, "UPDATE suggestions SET accepted=? WHERE suggestionMessageId=? AND serverId=?", [1, interaction.message.id, interaction.guild.id])
-                        acceptChannel.send({
-                            embeds: [presets.success(``, suggestion)
-                                .setFooter({
-                                    text: `(ID: ${suggestionId})`
-                                })
-                                .setAuthor({
-                                    name: `Suggestion | ${suggester.user.username}`,
-                                    iconURL: suggesterAvatar
-                                })
-                                .addFields({
-                                    name: `Accepted by ${interaction.user.username}`,
-                                    value: reason
-                                })
+            const result = modalInteraction.fields.getTextInputValue("judgement");
+            const reason =
+                modalInteraction.fields.getTextInputValue("reason") || "No reason provided";
+            await modalInteraction.deferUpdate();
 
-                            ],
-                            components: [row]
-                        })
-                        await modalInteraction.deferUpdate();
-                        interaction.message.delete()
-                    } else {
-                        return modalInteraction.reply({
-                            content: "please either reply with accept or deny.",
-                            flags: MessageFlags.Ephemeral
-                        })
-                    }
-                })
+            if (["d", "deny", "den", "de"].includes(result.toLowerCase())) {
+                await execute(
+                    db,
+                    "UPDATE suggestions SET denied=? WHERE suggestionMessageId=? AND serverId=?",
+                    [1, interaction.message.id, interaction.guild.id]
+                );
+                await denyChannel.send({
+                    embeds: [
+                        presets
+                            .error("", suggestion)
+                            .setFooter({ text: `(ID: ${suggestionId})` })
+                            .setAuthor({
+                                name: `Suggestion | ${suggester.user.username}`,
+                                iconURL: suggesterAvatar
+                            })
+                            .addFields({
+                                name: `Denied by ${interaction.user.username}`,
+                                value: reason
+                            })
+                    ],
+                    components: [row]
+                });
+                await modalInteraction.deferUpdate();
+                await interaction.message.delete();
+            } else if (
+                ["a", "ac", "acc", "acce", "accep", "accept"].includes(result.toLowerCase())
+            ) {
+                await execute(
+                    db,
+                    "UPDATE suggestions SET accepted=? WHERE suggestionMessageId=? AND serverId=?",
+                    [1, interaction.message.id, interaction.guild.id]
+                );
+                await acceptChannel.send({
+                    embeds: [
+                        presets
+                            .success("", suggestion)
+                            .setFooter({ text: `(ID: ${suggestionId})` })
+                            .setAuthor({
+                                name: `Suggestion | ${suggester.user.username}`,
+                                iconURL: suggesterAvatar
+                            })
+                            .addFields({
+                                name: `Accepted by ${interaction.user.username}`,
+                                value: reason
+                            })
+                    ],
+                    components: [row]
+                });
+                await interaction.message.delete();
+            } else {
+                await modalInteraction.followUp({
+                    content: "Please either reply with accept or deny.",
+                    flags: MessageFlags.Ephemeral
+                });
+            }
         } catch (e) {
+            if (e.code === 40060) return
+            if (e.code === 10062) return
             console.log(e)
         }
 
+
     }
+
 }
