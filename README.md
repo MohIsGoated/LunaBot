@@ -91,7 +91,7 @@ Pull requests and suggestions are welcome! Please review the repository before s
 
 ## Support
 
-Open an Issue or join the Discord: https://discord.gg/UzTRJ5KQhs
+Open an Issue or join the Discord: https://discord.gg/tXPYzwhAMg
 
 ---
 
