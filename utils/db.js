@@ -120,19 +120,19 @@ const db = new sqlite3.Database(dbpath)
 
 
         async function exists(db, id) {
-                const exists = await queryone(db, "SELECT * FROM users WHERE user_id=?", [id])
+                const exists = await queryone(db, "SELECT * FROM users WHERE user_id=?", [id]);
                 return !!exists;
         }
 
 
         async function registerserver(id) {
-        await execute(db, "INSERT INTO serverconfig(server_id) VALUES(?)", [id])
+        await execute(db, "INSERT INTO serverconfig(server_id) VALUES(?)", [id]);
         }
 
         async function getaichannels() {
-        return await queryall(db, "SELECT ai_channel_id FROM serverconfig")
+        return await queryall(db, "SELECT ai_channel_id FROM serverconfig");
         }
         async function getsuggestchannels() {
-        return await queryall(db, "SELECT * FROM serverconfig")
+        return await queryall(db, "SELECT * FROM serverconfig");
         }
 module.exports = { execute, queryall, queryone, initDb, exists, registerserver, serverindb, getaichannels, getsuggestchannels, db}
