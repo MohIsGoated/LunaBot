@@ -43,8 +43,8 @@ const db = new sqlite3.Database(dbpath)
                         db.all(sql, params, (err, rows) => {
                                 if (err) reject(err)
                                 resolve(rows)
-                        })
-                })
+                        });
+                });
         }
 
 
